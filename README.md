@@ -57,7 +57,7 @@ To get started with this project, you can follow these steps:
 1. Clone the repository:
 
    ```
-   git clone https://github.com/Pratik94229/Retail-Sales-Prediction---End-to-End-Project.git
+   git clone https://github.com/Deepkumarmahajan/Retail_Sales_Predicition.git
    ```
 2. Create virtual environment
    ```
