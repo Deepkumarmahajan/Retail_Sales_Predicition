@@ -91,7 +91,7 @@ To get started with this project, you can follow these steps:
 `python app.py`
 
 
-8. Streamlit deployment link 
+8. Streamlit deployment link https://deepkumarmahajan-retailsalespredicition.streamlit.app/
 
 9. Load the desired file for predicting the result.
 
