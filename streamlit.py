@@ -17,30 +17,70 @@ if os.path.exists('artifacts/model.pkl'):
 else:
     st.error("⚠️ Model file not found.")
 
+# Page configuration: Clean & modern
+st.set_page_config(page_title="🔮 Retail Sales Prediction", page_icon="📊", layout="wide")
+
+# Apply custom CSS to make the UI futuristic and clean
+st.markdown("""
+    <style>
+        .reportview-container {
+            background-color: #1e1e1e;
+        }
+        .sidebar .sidebar-content {
+            background-color: #212121;
+            color: white;
+        }
+        .sidebar .sidebar-header {
+            color: #76c7c0;
+        }
+        h1, h2, h3, h4 {
+            color: #f5f5f5;
+        }
+        .stButton>button {
+            background-color: #76c7c0;
+            color: white;
+            border-radius: 10px;
+            font-weight: bold;
+            padding: 12px 24px;
+            transition: background-color 0.3s;
+        }
+        .stButton>button:hover {
+            background-color: #4fa3a1;
+        }
+        .stAlert {
+            background-color: #d32f2f;
+            color: white;
+            border-radius: 10px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # Create the Streamlit web app
 def main():
-    # Page config to make it clean and with emojis
-    st.set_page_config(page_title="Retail Sales Prediction", page_icon="📊", layout="wide")
-    
     # Sidebar with upload option and header
     st.sidebar.header("🔧 Upload Data & Settings")
     uploaded_file = st.sidebar.file_uploader("Upload your sales data (CSV)", type="csv")
-    
+
+    # File Preview and Description
     if uploaded_file is not None:
-        with st.spinner('⏳ Processing your file...'):
-            try:
-                # Reading the CSV file
-                data = pd.read_csv(uploaded_file)
+        st.sidebar.markdown("### 📄 Uploaded Data Preview")
+        try:
+            data = pd.read_csv(uploaded_file)
+            st.sidebar.write(data.head())  # Preview the first few rows
+
+            with st.spinner('⏳ Processing your file...'):
                 preprocessed_data = preprocess_data(data)
                 if preprocessed_data is not None:
                     predictions = make_predictions(preprocessed_data)
                     display_predictions(predictions, data)
-            except FileNotFoundError:
-                st.error("❌ The required files could not be found. Please check the paths.")
-            except ValueError as e:
-                st.error(f"❌ Error: {e}. Please ensure the CSV file is properly formatted.")
-            except Exception as e:
-                st.error(f"❌ Unexpected error: {e}")
+        except Exception as e:
+            st.sidebar.error(f"⚠️ Error loading file: {str(e)}")
+    
+    # Provide additional guidance on usage
+    st.markdown("""
+        ### ✨ Welcome to the Retail Sales Prediction Tool
+        This tool predicts sales for different stores based on historical data. Upload your CSV and let the AI handle the rest!
+    """)
 
 def preprocess_data(data):
     # Select required columns
@@ -75,49 +115,37 @@ def display_predictions(predictions, data):
         'Date': pd.to_datetime(data['Date']),
         'Predicted Sales': predictions
     })
-    
-    st.subheader("💡 Predictions Overview")
+
+    st.subheader("💡 Predicted Sales Overview")
     st.write(result_df)
-    
-    # Display message on predictions
+
+    # Add some details and download functionality
     st.markdown("""
-    ### 🧮 How the Prediction Works
+        ### 🔍 How the Prediction Works:
+        The prediction model uses historical data, including store types, promotions, customer numbers, etc., to forecast future sales.
 
-    The model uses historical data including store details, promotions, competition distance, and more to forecast the sales for each store. Here's how it works:
-    
-    1. **Preprocessing**: The data is cleaned and transformed to handle any missing values and categorical data.
-    2. **Prediction**: After preprocessing, the model makes predictions based on the transformed data.
-    3. **Output**: You get a forecast of expected sales for each store.
+        ### 🧮 Purpose of the Prediction:
+        - **Optimize Inventory**: Avoid overstocking or understocking.
+        - **Plan Promotions**: Determine the best time to run promotions.
+        - **Business Insights**: Drive smarter decision-making across various departments.
 
-    ### 🎯 Purpose of the Prediction
+        ### 📈 The Ultimate Goal:
+        This tool helps businesses improve their bottom line by predicting sales, making informed decisions, and aligning stock, staffing, and marketing strategies.
 
-    The primary goal of these predictions is to help businesses:
-    - Optimize inventory management 📦.
-    - Plan promotions more effectively 🎉.
-    - Make data-driven decisions to improve profitability 💰.
-
-    ### 📈 Ultimate Goal of This Report
-
-    This report aims to empower business owners, analysts, and decision-makers to forecast future sales accurately. It helps them make smarter decisions around stock levels, staffing, and marketing strategies.
     """)
-    
-    # Section for further explanation on the purpose of the model
+
+    # Add a download button to export the result
+    st.download_button(
+        label="Download Predicted Sales (CSV)",
+        data=result_df.to_csv(index=False),
+        file_name="predicted_sales.csv",
+        mime="text/csv",
+    )
+
+    # Add a thank you message
     st.markdown("""
-    #### ✨ Key Benefits:
-    - Predict future sales to optimize stock levels and avoid overstocking or understocking.
-    - Leverage predictions to plan promotions effectively and understand demand patterns.
-    - Use sales forecasts to align staffing and operational costs.
-    
-    #### ⚙️ How We Calculate:
-    - **Model Training**: The model is trained on historical sales data, which includes various factors affecting sales.
-    - **Sales Forecast**: The model then predicts the sales based on new, unseen data (uploaded by you) after preprocessing.
-    - **Accuracy**: We ensure that the model is robust and can handle different types of data variations.
-    """)
-    
-    # Emojis for the final touch
-    st.markdown("""
-    ### 🌟 Thank you for using the Retail Sales Prediction tool!
-    We're here to help you forecast, plan, and make better business decisions. If you have any questions, feel free to reach out! 📧
+        ### 🎉 Thank you for using the Retail Sales Prediction Tool! 🌟
+        We hope this helps you optimize your business and achieve better results. 🚀
     """)
 
 if __name__ == '__main__':
