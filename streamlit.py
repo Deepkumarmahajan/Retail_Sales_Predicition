@@ -55,6 +55,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Project Owner Details
+def display_project_owner_details():
+    st.markdown("""
+        ### 👤 Project Owner: Deepkumar Mahajan
+        - **Email**: [thedeepkumarmahajan@gmail.com](mailto:thedeepkumarmahajan@gmail.com)
+        - **LinkedIn**: [Deepkumar Mahajan](https://www.linkedin.com/in/deepkumarmahajan/)
+        
+        For any queries, support, or further assistance, feel free to reach out to me! 😊
+    """)
+
 # Create the Streamlit web app
 def main():
     # Sidebar with upload option and header
@@ -68,6 +78,15 @@ def main():
             data = pd.read_csv(uploaded_file)
             st.sidebar.write(data.head())  # Preview the first few rows
 
+            # Display Data Summary (e.g., number of rows, stores, date range)
+            data_summary = f"""
+            - **Total Records**: {len(data)}
+            - **Stores Included**: {data['Store'].nunique()}
+            - **Date Range**: {data['Date'].min()} to {data['Date'].max()}
+            """
+            st.sidebar.markdown("### 📊 Data Summary")
+            st.sidebar.markdown(data_summary)
+
             with st.spinner('⏳ Processing your file...'):
                 preprocessed_data = preprocess_data(data)
                 if preprocessed_data is not None:
@@ -80,73 +99,10 @@ def main():
     st.markdown("""
         ### ✨ Welcome to the Retail Sales Prediction Tool
         This tool predicts sales for different stores based on historical data. Upload your CSV and let the AI handle the rest!
-    """)
 
-def preprocess_data(data):
-    # Select required columns
-    columns = ['Store', 'DayOfWeek', 'Date', 'Sales', 'Customers', 'Open', 'Promo',
-               'StateHoliday', 'SchoolHoliday', 'StoreType', 'Assortment',
-               'CompetitionDistance', 'CompetitionOpenSinceMonth',
-               'CompetitionOpenSinceYear', 'Promo2', 'Promo2SinceWeek',
-               'Promo2SinceYear', 'PromoInterval']
-    
-    # Check if the required columns are present
-    if not all(col in data.columns for col in columns):
-        st.error("⚠️ Missing some required columns in the CSV.")
-        return None
-    
-    # Convert Date column to datetime
-    data['Date'] = pd.to_datetime(data['Date'], errors='coerce')
-    
-    # Preprocess using the preprocessor
-    preprocessed_data = preprocessor.transform(data)
-    
-    return preprocessed_data
+        ### 🧮 How to Use This Tool:
+        1. **Upload your sales data** in CSV format.
+        2. The model will process the data and predict sales.
+        3. Download the predictions and start optimizing your business!
 
-def make_predictions(data):
-    # Make predictions using the trained model
-    predictions = model.predict(data)
-    return predictions
-
-def display_predictions(predictions, data):
-    # Display predictions along with store number and date
-    result_df = pd.DataFrame({
-        'Store': data['Store'],
-        'Date': pd.to_datetime(data['Date']),
-        'Predicted Sales': predictions
-    })
-
-    st.subheader("💡 Predicted Sales Overview")
-    st.write(result_df)
-
-    # Add some details and download functionality
-    st.markdown("""
-        ### 🔍 How the Prediction Works:
-        The prediction model uses historical data, including store types, promotions, customer numbers, etc., to forecast future sales.
-
-        ### 🧮 Purpose of the Prediction:
-        - **Optimize Inventory**: Avoid overstocking or understocking.
-        - **Plan Promotions**: Determine the best time to run promotions.
-        - **Business Insights**: Drive smarter decision-making across various departments.
-
-        ### 📈 The Ultimate Goal:
-        This tool helps businesses improve their bottom line by predicting sales, making informed decisions, and aligning stock, staffing, and marketing strategies.
-
-    """)
-
-    # Add a download button to export the result
-    st.download_button(
-        label="Download Predicted Sales (CSV)",
-        data=result_df.to_csv(index=False),
-        file_name="predicted_sales.csv",
-        mime="text/csv",
-    )
-
-    # Add a thank you message
-    st.markdown("""
-        ### 🎉 Thank you for using the Retail Sales Prediction Tool! 🌟
-        We hope this helps you optimize your business and achieve better results. 🚀
-    """)
-
-if __name__ == '__main__':
-    main()
+        ### 📈 T
