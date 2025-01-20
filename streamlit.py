@@ -105,4 +105,78 @@ def main():
         2. The model will process the data and predict sales.
         3. Download the predictions and start optimizing your business!
 
-        ### 📈 T
+        ### 📈 The Ultimate Goal:
+        This tool helps businesses optimize inventory, plan promotions, and make smarter decisions based on accurate sales predictions.
+    """)
+
+    # Project owner section at the bottom of the page
+    display_project_owner_details()
+
+def preprocess_data(data):
+    # Select required columns
+    columns = ['Store', 'DayOfWeek', 'Date', 'Sales', 'Customers', 'Open', 'Promo',
+               'StateHoliday', 'SchoolHoliday', 'StoreType', 'Assortment',
+               'CompetitionDistance', 'CompetitionOpenSinceMonth',
+               'CompetitionOpenSinceYear', 'Promo2', 'Promo2SinceWeek',
+               'Promo2SinceYear', 'PromoInterval']
+    
+    # Check if the required columns are present
+    if not all(col in data.columns for col in columns):
+        st.error("⚠️ Missing some required columns in the CSV.")
+        return None
+    
+    # Convert Date column to datetime
+    data['Date'] = pd.to_datetime(data['Date'], errors='coerce')
+    
+    # Preprocess using the preprocessor
+    preprocessed_data = preprocessor.transform(data)
+    
+    return preprocessed_data
+
+def make_predictions(data):
+    # Make predictions using the trained model
+    predictions = model.predict(data)
+    return predictions
+
+def display_predictions(predictions, data):
+    # Display predictions along with store number and date
+    result_df = pd.DataFrame({
+        'Store': data['Store'],
+        'Date': pd.to_datetime(data['Date']),
+        'Predicted Sales': predictions
+    })
+
+    st.subheader("💡 Predicted Sales Overview")
+    st.write(result_df)
+
+    # Add some details and download functionality
+    st.markdown("""
+        ### 🔍 How the Prediction Works:
+        The prediction model uses historical data, including store types, promotions, customer numbers, etc., to forecast future sales.
+
+        ### 🧮 Purpose of the Prediction:
+        - **Optimize Inventory**: Avoid overstocking or understocking.
+        - **Plan Promotions**: Determine the best time to run promotions.
+        - **Business Insights**: Drive smarter decision-making across various departments.
+
+        ### 📈 The Ultimate Goal:
+        This tool helps businesses improve their bottom line by predicting sales, making informed decisions, and aligning stock, staffing, and marketing strategies.
+
+    """)
+
+    # Add a download button to export the result
+    st.download_button(
+        label="Download Predicted Sales (CSV)",
+        data=result_df.to_csv(index=False),
+        file_name="predicted_sales.csv",
+        mime="text/csv",
+    )
+
+    # Add a thank you message
+    st.markdown("""
+        ### 🎉 Thank you for using the Retail Sales Prediction Tool! 🌟
+        We hope this helps you optimize your business and achieve better results. 🚀
+    """)
+
+if __name__ == '__main__':
+    main()
