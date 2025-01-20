@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import pickle
 import os
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # Load the preprocessor
 if os.path.exists('artifacts/proprocessor.pkl'):
@@ -21,125 +19,105 @@ else:
 
 # Create the Streamlit web app
 def main():
+    # Page config to make it clean and with emojis
     st.set_page_config(page_title="Retail Sales Prediction", page_icon="📊", layout="wide")
     
-    # Sidebar configuration
+    # Sidebar with upload option and header
     st.sidebar.header("🔧 Upload Data & Settings")
-    uploaded_file = st.sidebar.file_uploader("Upload CSV file", type="csv")
+    uploaded_file = st.sidebar.file_uploader("Upload your sales data (CSV)", type="csv")
     
     if uploaded_file is not None:
-        with st.spinner('Processing your file...'):
+        with st.spinner('⏳ Processing your file...'):
             try:
+                # Reading the CSV file
                 data = pd.read_csv(uploaded_file)
                 preprocessed_data = preprocess_data(data)
-                if preprocessed_data is not None:  # Only proceed if preprocessing succeeds
+                if preprocessed_data is not None:
                     predictions = make_predictions(preprocessed_data)
                     display_predictions(predictions, data)
             except FileNotFoundError:
                 st.error("❌ The required files could not be found. Please check the paths.")
             except ValueError as e:
-                st.error(f"❌ An error occurred: {e}. Please ensure the CSV is correctly formatted.")
+                st.error(f"❌ Error: {e}. Please ensure the CSV file is properly formatted.")
             except Exception as e:
-                st.error(f"❌ An unexpected error occurred: {e}")
+                st.error(f"❌ Unexpected error: {e}")
 
 def preprocess_data(data):
-    # Select the required columns
+    # Select required columns
     columns = ['Store', 'DayOfWeek', 'Date', 'Sales', 'Customers', 'Open', 'Promo',
                'StateHoliday', 'SchoolHoliday', 'StoreType', 'Assortment',
                'CompetitionDistance', 'CompetitionOpenSinceMonth',
                'CompetitionOpenSinceYear', 'Promo2', 'Promo2SinceWeek',
                'Promo2SinceYear', 'PromoInterval']
-    # Check if all required columns are present
+    
+    # Check if the required columns are present
     if not all(col in data.columns for col in columns):
-        st.error("⚠️ The uploaded CSV is missing some required columns.")
+        st.error("⚠️ Missing some required columns in the CSV.")
         return None
     
-    # Convert date column to datetime
+    # Convert Date column to datetime
     data['Date'] = pd.to_datetime(data['Date'], errors='coerce')
     
-    # Preprocess the data using the preprocessor
+    # Preprocess using the preprocessor
     preprocessed_data = preprocessor.transform(data)
-
+    
     return preprocessed_data
 
 def make_predictions(data):
-    # Make predictions using the model
+    # Make predictions using the trained model
     predictions = model.predict(data)
     return predictions
 
 def display_predictions(predictions, data):
-    # Display the expected sales values along with store number and date
+    # Display predictions along with store number and date
     result_df = pd.DataFrame({
         'Store': data['Store'],
         'Date': pd.to_datetime(data['Date']),
-        'Expected Sales': predictions
-    })
-    
-    st.subheader("📈 Predictions Overview")
-    st.write(result_df)
-    
-    # Visualize predictions in a plot
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(result_df['Date'], result_df['Expected Sales'], label="Predicted Sales", color='blue')
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Expected Sales')
-    ax.set_title('Retail Sales Predictions Over Time')
-    ax.legend()
-    st.pyplot(fig)
-    
-    # Bar chart to compare actual vs predicted sales
-    st.subheader("📊 Actual vs Predicted Sales")
-    data['Sales'] = data['Sales'].fillna(0)  # Fill missing sales with 0 for comparison
-    bar_chart_data = pd.DataFrame({
-        'Store': data['Store'],
-        'Date': data['Date'],
-        'Actual Sales': data['Sales'],
         'Predicted Sales': predictions
     })
     
-    bar_fig, bar_ax = plt.subplots(figsize=(10, 6))
-    bar_chart_data.groupby('Store')[['Actual Sales', 'Predicted Sales']].mean().plot(kind='bar', ax=bar_ax)
-    bar_ax.set_ylabel('Sales')
-    bar_ax.set_title('Actual vs Predicted Sales by Store')
-    st.pyplot(bar_fig)
+    st.subheader("💡 Predictions Overview")
+    st.write(result_df)
     
-    # Distribution of predicted sales
-    st.subheader("📉 Distribution of Predicted Sales")
-    hist_fig, hist_ax = plt.subplots(figsize=(10, 6))
-    hist_ax.hist(predictions, bins=30, color='skyblue', edgecolor='black')
-    hist_ax.set_xlabel('Predicted Sales')
-    hist_ax.set_ylabel('Frequency')
-    hist_ax.set_title('Distribution of Predicted Sales')
-    st.pyplot(hist_fig)
-    
-    # Correlation matrix for input features
-    st.subheader("🔍 Feature Correlation")
-    correlation_matrix = data.corr()
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', ax=ax)
-    st.pyplot(fig)
-
-    # Add explanations about the purpose of the model and report
+    # Display message on predictions
     st.markdown("""
-    ### Purpose of the Report
+    ### 🧮 How the Prediction Works
 
-    The goal of this report is to provide an accurate forecast of retail sales, helping businesses:
-    - Optimize inventory management.
-    - Plan promotional strategies.
-    - Improve decision-making around staffing, promotions, and stock levels.
+    The model uses historical data including store details, promotions, competition distance, and more to forecast the sales for each store. Here's how it works:
     
-    ### How the Prediction Works
+    1. **Preprocessing**: The data is cleaned and transformed to handle any missing values and categorical data.
+    2. **Prediction**: After preprocessing, the model makes predictions based on the transformed data.
+    3. **Output**: You get a forecast of expected sales for each store.
 
-    The model uses historical sales data and additional features (such as store type, competition, and promotions) to predict future sales for each store.
+    ### 🎯 Purpose of the Prediction
+
+    The primary goal of these predictions is to help businesses:
+    - Optimize inventory management 📦.
+    - Plan promotions more effectively 🎉.
+    - Make data-driven decisions to improve profitability 💰.
+
+    ### 📈 Ultimate Goal of This Report
+
+    This report aims to empower business owners, analysts, and decision-makers to forecast future sales accurately. It helps them make smarter decisions around stock levels, staffing, and marketing strategies.
+    """)
     
-    **Key Calculations:**
-    1. **Data Preprocessing**: We clean the data, handle missing values, and encode categorical variables to make them suitable for the model.
-    2. **Prediction**: The trained model predicts future sales based on the preprocessed data.
-    3. **Visualization**: We visualize actual vs predicted sales, the distribution of predictions, and feature correlations to provide deeper insights.
+    # Section for further explanation on the purpose of the model
+    st.markdown("""
+    #### ✨ Key Benefits:
+    - Predict future sales to optimize stock levels and avoid overstocking or understocking.
+    - Leverage predictions to plan promotions effectively and understand demand patterns.
+    - Use sales forecasts to align staffing and operational costs.
     
-    ### Ultimate Purpose of the Report
+    #### ⚙️ How We Calculate:
+    - **Model Training**: The model is trained on historical sales data, which includes various factors affecting sales.
+    - **Sales Forecast**: The model then predicts the sales based on new, unseen data (uploaded by you) after preprocessing.
+    - **Accuracy**: We ensure that the model is robust and can handle different types of data variations.
+    """)
     
-    This sales prediction report aims to assist business owners and analysts in making informed decisions about future sales, enabling them to better prepare for demand fluctuations and market trends.
+    # Emojis for the final touch
+    st.markdown("""
+    ### 🌟 Thank you for using the Retail Sales Prediction tool!
+    We're here to help you forecast, plan, and make better business decisions. If you have any questions, feel free to reach out! 📧
     """)
 
 if __name__ == '__main__':
