@@ -58,7 +58,7 @@ st.markdown("""
 # Project Owner Details
 def display_project_owner_details():
     st.markdown("""
-        ### 👤 Project Owner: Deepkumar Mahajan
+        ### 👤 Project Owner: NIT,NGP - Group no. 17 (Admin Details are given below )
         - **Email**: [thedeepkumarmahajan@gmail.com](mailto:thedeepkumarmahajan@gmail.com)
         - **LinkedIn**: [Deepkumar Mahajan](https://www.linkedin.com/in/deepkumarmahajan/)
         
